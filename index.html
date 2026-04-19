@@ -41,18 +41,23 @@ button {
     background-color: white;
     border: 4px solid #e0e0e0;
     border-radius: 15px;
-    padding: 5px; /* Zmenšený vnitřní okraj, aby zbyl prostor pro obrázek */
+    padding: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Roztáhne obsah mezi horní a dolní okraj */
+    justify-content: space-between;
     cursor: pointer;
-    overflow: hidden; /* Aby obrázek nepřetékal přes rohy */
-    aspect-ratio: 1 / 1; /* Tlačítka budou čtvercová, vypadá to profesionálněji */
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    /* PŘIDÁNO: Toto omezí velikost tlačítka */
+    max-width: 100px; 
+    width: 50%;
+    margin: 0 auto; /* Vycentrování v mřížce */
 }
 
+
 button img {
-    width: 95%;      /* Roztažení do šířky */
+    width: 50%;      /* Roztažení do šířky */
     height: 80%;     /* Zabere 80 % výšky tlačítka */
     object-fit: contain; 
     margin: 5px auto; /* Malý odstup od okrajů */
@@ -166,17 +171,20 @@ async function ukazKategorii(id, nazev) {
         const grid = document.getElementById('tlacitka-grid');
         let html = ''; // Skládáme HTML bokem
         
-        data.forEach(p => {
-            let onclickAction = (!p.item_id || p.item_id === "null") 
-                ? `mluv('${p.label}')` 
-                : `ukazKategorii('${p.item_id}', '${p.label}')`;
+        // Ve funkci ukazKategorii najdi smyčku data.forEach a uprav ji takto:
+data.forEach(p => {
+    let onclickAction = (!p.item_id || p.item_id === "null") 
+        ? `mluv('${p.label}')` 
+        : `ukazKategorii('${p.item_id}', '${p.label}')`;
 
-            html += `
-                <button style="background-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
-                    <img src="${getImgUrl(p.img_id)}">
-                    ${p.label}
-                </button>`;
-        });
+    html += `
+        <button style="border-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
+            <img src="${getImgUrl(p.img_id)}">
+            <span>${p.label}</span> 
+        </button>`; // PŘIDÁNO: <span> kolem labelu
+});
+
+        
 
         grid.innerHTML = html; // Vložíme vše najednou
         window.scrollTo(0, 0); // Vždy odrolujeme nahoru při změně kategorie
