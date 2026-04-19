@@ -80,14 +80,28 @@ button span {
 
 
 
-        .btn-back { 
-            background: var(--primary-gradient);
-            margin: 30px auto; 
-            padding: 15px 40px; 
-            border-radius: 50px;
-            display: block;
-            min-height: auto;
-        }
+        /* Samostatné nastavení pro tlačítko ZPĚT */
+button.btn-back {
+    aspect-ratio: auto;    /* Zruší čtverec */
+    max-width: 300px;      /* Může být širší než ostatní */
+    height: 60px;          /* Pevná výška */
+    flex-direction: row;   /* Text bude vedle ikony, ne pod ní */
+    background: var(--primary-gradient); /* Tvoje fialové pozadí */
+    color: white;          /* Bílý text */
+    font-size: 1.4rem;     /* Větší písmo */
+    border: none;          /* Bez šedého rámečku */
+    margin: 20px auto;     /* Vycentrování */
+    display: flex;         /* Aby fungovalo centrování textu */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Efekt při stisknutí specificky pro Zpět */
+button.btn-back:active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
+}
+
 
         .hidden { display: none; }
 
