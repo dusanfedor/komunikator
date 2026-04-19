@@ -29,38 +29,54 @@
             margin-bottom: 30px;
         }
 
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 25px; 
-            max-width: 900px; 
-            margin: 0 auto; 
-        }
+       
+#menu-grid, #tlacitka-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Automaticky se přizpůsobí šířce */
+    gap: 15px;
+    padding: 15px;
+}
 
-        button { 
-            padding: 25px 15px; 
-            font-size: 20px; 
-            font-weight: 700; 
-            border: none; 
-            border-radius: var(--radius); 
-            cursor: pointer; 
-            color: white; 
-            transition: all 0.3s; 
-            box-shadow: 8px 8px 16px #c1c9d2, -8px -8px 16px #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 180px;
-        }
+button {
+    background-color: white;
+    border: 4px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 5px; /* Zmenšený vnitřní okraj, aby zbyl prostor pro obrázek */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* Roztáhne obsah mezi horní a dolní okraj */
+    cursor: pointer;
+    overflow: hidden; /* Aby obrázek nepřetékal přes rohy */
+    aspect-ratio: 1 / 1; /* Tlačítka budou čtvercová, vypadá to profesionálněji */
+}
 
-        button:active { transform: scale(0.95); }
+button img {
+    width: 90%;  /* Obrázek zabere 90 % šířky */
+    height: 75%; /* Obrázek zabere většinu výšky */
+    object-fit: contain; /* Obrázek se nedeformuje, ale vyplní maximum místa */
+    margin: auto; /* Vycentruje obrázek */
+}
 
-        img { 
-            width: 80px; 
-            height: 80px; 
-            margin-bottom: 10px; 
-            object-fit: contain;
+button span {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.8); /* Poloprůhledné pozadí pod textem */
+    font-size: 1.1rem;
+    padding: 2px 0;
+    text-align: center;
+}
+
+
+       button:active {
+    transform: scale(0.95); /* Efekt stisknutí */
+    border-color: #3498db; /* Při kliknutí modře blikne */
+}
+
+button img {
+    width: 100%; /* Obrázek se roztáhne na šířku tlačítka */
+    max-width: 120px; /* Ale nebude zbytečně obří */
+    height: auto;
+    margin-bottom: 10px;
         }
 
         .btn-back { 
@@ -100,7 +116,7 @@
 
     <script>
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
-        const M_KEY = 'sb_publishable_j41yg2foIBxZrQjhhRkoKA_p6BoqkfL'; 
+        const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
 
         // INICIALIZACE: Vytvoření Supabase klienta pro přístup k datům
@@ -137,37 +153,43 @@
                 });
             } catch (e) { console.error("Chyba při načítání menu:", e); }
         }
+async function ukazKategorii(id, nazev) {
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('kategorie-detail').classList.remove('hidden');
+    document.getElementById('kategorie-nazev').innerText = nazev;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('aac_data')
+            .select('*')
+            .eq('category', id)
+            .eq('lang', 'cs');
 
-        async function ukazKategorii(id, nazev) {
-            document.getElementById('menu').classList.add('hidden');
-            document.getElementById('kategorie-detail').classList.remove('hidden');
-            document.getElementById('kategorie-nazev').innerText = nazev;
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('aac_data')
-                    .select('*')
-                    .eq('category', id)
-                    .eq('lang', 'cs');
+        if (error) throw error;
 
-                if (error) throw error;
+        const grid = document.getElementById('tlacitka-grid');
+        let html = ''; // Skládáme HTML bokem
+        
+        data.forEach(p => {
+            let onclickAction = (!p.item_id || p.item_id === "null") 
+                ? `mluv('${p.label}')` 
+                : `ukazKategorii('${p.item_id}', '${p.label}')`;
 
-                const grid = document.getElementById('tlacitka-grid');
-                grid.innerHTML = '';
-                
-                data.forEach(p => {
-                    let onclickAction = (!p.item_id || p.item_id === "null") 
-                        ? `mluv('${p.label}')` 
-                        : `ukazKategorii('${p.item_id}', '${p.label}')`;
+            html += `
+                <button style="background-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
+                    <img src="${getImgUrl(p.img_id)}">
+                    ${p.label}
+                </button>`;
+        });
 
-                    grid.innerHTML += `
-                        <button style="background-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
-                            <img src="${getImgUrl(p.img_id)}">
-                            ${p.label}
-                        </button>`;
-                });
-            } catch (e) { console.error("Chyba detailu:", e); }
-        }
+        grid.innerHTML = html; // Vložíme vše najednou
+        window.scrollTo(0, 0); // Vždy odrolujeme nahoru při změně kategorie
+        
+    } catch (e) { 
+        console.error("Chyba detailu:", e); 
+    }
+}
+
 
         function mluv(t) {
             if (!t || !window.speechSynthesis) return;
