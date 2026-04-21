@@ -216,34 +216,34 @@ window.speechSynthesis.onvoiceschanged = () => {
         }
 
     function mluv(t) {
-    if (!t || !window.speechSynthesis) {
-        console.error("Syntéza řeči není podporována");
+    if (!t) return;
+    
+    // Pokud je t prázdné (pojistka při startu), jen "připravíme" systém
+    if (t === "") {
+        const silent = new SpeechSynthesisUtterance(" ");
+        silent.volume = 0;
+        window.speechSynthesis.speak(silent);
         return;
     }
 
-    // Zrušit předchozí řeč
     window.speechSynthesis.cancel();
 
-    const m = new SpeechSynthesisUtterance(t);
-    
-    // Zkusíme najít nejlepší český hlas
-    if (voices.length === 0) voices = window.speechSynthesis.getVoices();
-    
-    const czechVoice = voices.find(v => v.lang === 'cs-CZ' || v.lang === 'cs_CZ' || v.lang.startsWith('cs'));
-    
-    if (czechVoice) {
-        m.voice = czechVoice;
+    // Malý trik: Pokud hlasy nejsou načteny, počkáme 100ms a zkusíme to znovu
+    if (window.speechSynthesis.getVoices().length === 0) {
+        setTimeout(() => mluv(t), 100);
+        return;
     }
+
+    const m = new SpeechSynthesisUtterance(t);
+    const v = window.speechSynthesis.getVoices();
+    const czech = v.find(voice => voice.lang.includes('cs'));
     
+    if (czech) m.voice = czech;
     m.lang = 'cs-CZ';
-    m.pitch = 1;
-    m.rate = 0.9; // Trošku pomalejší pro lepší srozumitelnost
-
-    // Důležité pro Android: Error handling
-    m.onerror = (e) => console.error("Chyba řeči:", e);
-
+    
     window.speechSynthesis.speak(m);
 }
+
 
 
         function vratSeZpet() {
