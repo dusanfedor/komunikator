@@ -137,7 +137,11 @@ window.speechSynthesis.onvoiceschanged = () => {
             return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
         }
 
-        window.onload = () => nactiMenu();
+           window.onload = () => {
+            nactiMenu();
+            // POJISTKA: Krátké ticho pro aktivaci reproduktoru v Androidu
+            mluv(""); 
+        };
 
         async function nactiMenu() {
             try {
