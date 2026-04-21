@@ -119,16 +119,15 @@
     </div>
 
     <script>
-        let voices = [];
-window.speechSynthesis.onvoiceschanged = () => {
-    voices = window.speechSynthesis.getVoices();
-};
-
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
         
         let historieKategorii = []; 
+        let voices = [];
+window.speechSynthesis.onvoiceschanged = () => {
+    voices = window.speechSynthesis.getVoices();
+};
 
         const supabaseClient = supabase.createClient(M_URL, M_KEY);
 
