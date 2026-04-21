@@ -154,28 +154,41 @@
             return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
         }
 
-        async function nactiMenu() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('aac_data')
-                    .select('*')
-                    .eq('category', 'main')
-                    .eq('lang', 'cs');
+ async function nactiMenu() {
+    const grid = document.getElementById('menu-grid');
+    try {
+        grid.innerHTML = '<p>Připojování k databázi...</p>'; // Status zpráva
 
-                if (error) throw error;
+        const { data, error } = await supabaseClient
+            .from('aac_data')
+            .select('*')
+            .eq('category', 'main')
+            .eq('lang', 'cs');
 
-                const grid = document.getElementById('menu-grid');
-                grid.innerHTML = '';
-                data.forEach(item => {
-                    grid.innerHTML += `
-                        <button style="border-color:${item.color || '#3498db'}" 
-                                onclick="ukazKategorii('${item.item_id}', '${item.label}')">
-                            <img src="${getImgUrl(item.img_id)}">
-                            <span>${item.label}</span>
-                        </button>`;
-                });
-            } catch (e) { console.error("Chyba při načítání menu:", e); }
+        if (error) {
+            grid.innerHTML = `<p style="color:red">Chyba Supabase: ${error.message}</p>`;
+            return;
         }
+
+        if (!data || data.length === 0) {
+            grid.innerHTML = '<p>V databázi nebyly nalezeny žádné hlavní kategorie (main/cs).</p>';
+            return;
+        }
+
+        grid.innerHTML = ''; // Vyčistit status a vložit tlačítka
+        data.forEach(item => {
+            grid.innerHTML += `
+                <button style="border-color:${item.color || '#3498db'}" 
+                        onclick="ukazKategorii('${item.item_id}', '${item.label}')">
+                    <img src="${getImgUrl(item.img_id)}">
+                    <span>${item.label}</span>
+                </button>`;
+        });
+    } catch (e) { 
+        grid.innerHTML = `<p style="color:red">Kritická chyba JS: ${e.message}</p>`;
+    }
+}
+
 
         async function ukazKategorii(id, nazev, jeToZpet = false) {
             const menuDiv = document.getElementById('menu');
