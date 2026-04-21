@@ -207,13 +207,24 @@
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-        function mluv(t) {
-            if (!t || !window.speechSynthesis) return;
-            window.speechSynthesis.cancel(); 
-            const m = new SpeechSynthesisUtterance(t);
-            m.lang = 'cs-CZ';
-            window.speechSynthesis.speak(m);
-        }
+     function mluv(t) {
+    if (!t || !window.speechSynthesis) return;
+
+    // Zastavit vše, co zrovna hraje
+    window.speechSynthesis.cancel(); 
+
+    const m = new SpeechSynthesisUtterance(t);
+    m.lang = 'cs-CZ';
+    m.rate = 0.9; // Mírně pomalejší řeč je pro AAK lepší
+
+    // Najít český hlas (některé Androidy ho ignorují, pokud není výslovně vybrán)
+    const voices = window.speechSynthesis.getVoices();
+    const czechVoice = voices.find(v => v.lang.includes('cs'));
+    if (czechVoice) m.voice = czechVoice;
+
+    window.speechSynthesis.speak(m);
+}
+
 
         function vratSeZpet() {
             if (historieKategorii.length === 0) return;
