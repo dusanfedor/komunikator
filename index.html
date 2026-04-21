@@ -63,7 +63,7 @@
         button span {
             width: 100%;
             background-color: rgba(255, 255, 255, 0.8);
-            font-size: clamp(1rem, 5vw, 1.8rem);
+            font-size: clamp(1rem, 5vw, 1.8rem); /* Upraveno pro lepší čitelnost na mobilu */
             padding: 2px 0;
             text-align: center;
         }
@@ -113,36 +113,20 @@
     </div>
 
     <div id="kategorie-detail" class="hidden">
-        <h1 id="kategorie-nazev" data-current-id="">Název sekce</h1>
+        <h1 id="kategorie-nazev">Název sekce</h1>
         <div id="tlacitka-grid"></div>
         <button class="btn-back" onclick="vratSeZpet()">⬅ ZPĚT</button>
     </div>
 
     <script>
+        
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
         
         let historieKategorii = []; 
-        let supabaseClient;
-        let voices = [];
 
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-        }
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-        loadVoices();
-
-        window.onload = () => {
-            try {
-                supabaseClient = supabase.createClient(M_URL, M_KEY);
-                nactiMenu();
-            } catch (e) {
-                console.error("Inicializace selhala:", e);
-            }
-        };
+        const supabaseClient = supabase.createClient(M_URL, M_KEY);
 
         function getImgUrl(imgId) {
             if (!imgId) return 'placeholder.png'; 
@@ -150,10 +134,10 @@
             return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
         }
 
+        window.onload = () => nactiMenu();
+
         async function nactiMenu() {
             try {
-                grid.innerHTML = '<button><span>TEST TLAČÍTKO</span></button>';
-
                 const { data, error } = await supabaseClient
                     .from('aac_data')
                     .select('*')
@@ -172,23 +156,25 @@
                             <span>${item.label}</span>
                         </button>`;
                 });
-            } catch (e) { console.error("Chyba menu:", e); }
+            } catch (e) { console.error("Chyba při načítání menu:", e); }
         }
 
         async function ukazKategorii(id, nazev, jeToZpet = false) {
             const menuDiv = document.getElementById('menu');
             const detailDiv = document.getElementById('kategorie-detail');
-            const nazevElement = document.getElementById('kategorie-nazev');
             
             if (!jeToZpet) {
-                historieKategorii.push({ 
-                    id: nazevElement.dataset.currentId || 'main', 
-                    label: nazevElement.innerText || 'Vyberte kategorii' 
-                });
+                const aktualniSekce = {
+                    id: menuDiv.classList.contains('hidden') ? document.getElementById('kategorie-nazev').dataset.currentId : 'main',
+                    label: document.getElementById('kategorie-nazev').innerText
+                };
+                historieKategorii.push(aktualniSekce);
             }
 
             menuDiv.classList.add('hidden');
             detailDiv.classList.remove('hidden');
+            
+            const nazevElement = document.getElementById('kategorie-nazev');
             nazevElement.innerText = nazev;
             nazevElement.dataset.currentId = id;
 
@@ -202,45 +188,62 @@
                 if (error) throw error;
 
                 const grid = document.getElementById('tlacitka-grid');
-                grid.innerHTML = '';
+                let html = '';
+                
                 data.forEach(p => {
-                    let action = (!p.item_id || p.item_id === "null" || p.item_id === "") 
+                    let onclickAction = (!p.item_id || p.item_id === "null" || p.item_id === "") 
                         ? `mluv('${p.label}')` 
                         : `ukazKategorii('${p.item_id}', '${p.label}')`;
 
-                    grid.innerHTML += `
-                        <button style="border-color:${p.color || '#e74c3c'}" onclick="${action}">
+                    html += `
+                        <button style="border-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
                             <img src="${getImgUrl(p.img_id)}">
                             <span>${p.label}</span> 
                         </button>`;
                 });
+
+                grid.innerHTML = html;
+                window.scrollTo(0, 0);
+                
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-        function mluv(t) {
-            if (!t || !window.speechSynthesis) return;
-            window.speechSynthesis.cancel(); 
-            const m = new SpeechSynthesisUtterance(t);
-            m.lang = 'cs-CZ';
-            if (voices.length === 0) loadVoices();
-            const czech = voices.find(v => v.lang.includes('cs'));
-            if (czech) m.voice = czech;
-            window.speechSynthesis.speak(m);
-        }
+       function mluv(t) {
+    if (!t || !window.speechSynthesis) return;
+
+    // Zastavit vše, co zrovna hraje
+    window.speechSynthesis.cancel(); 
+
+    const m = new SpeechSynthesisUtterance(t);
+    m.lang = 'cs-CZ';
+    m.rate = 0.9; // Mírně pomalejší řeč je pro AAK lepší
+
+    // Najít český hlas (některé Androidy ho ignorují, pokud není výslovně vybrán)
+    const voices = window.speechSynthesis.getVoices();
+    const czechVoice = voices.find(v => v.lang.includes('cs'));
+    if (czechVoice) m.voice = czechVoice;
+
+    window.speechSynthesis.speak(m);
+       }
 
         function vratSeZpet() {
             if (historieKategorii.length === 0) return;
-            const posledni = historieKategorii.pop();
 
-            if (posledni.id === 'main') {
+            const posledniHladina = historieKategorii.pop();
+
+            if (posledniHladina.id === 'main') {
                 document.getElementById('kategorie-detail').classList.add('hidden');
                 document.getElementById('menu').classList.remove('hidden');
                 nactiMenu();
             } else {
-                ukazKategorii(posledni.id, posledni.label, true);
+                ukazKategorii(posledniHladina.id, posledniHladina.label, true);
             }
         }
     </script>
+
+    <footer>
+        <p>D.F & J.U © 2026</p>
+    </footer>
 </body>
 </html>
 
