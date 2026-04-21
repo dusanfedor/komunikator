@@ -63,7 +63,7 @@
         button span {
             width: 100%;
             background-color: rgba(255, 255, 255, 0.8);
-            font-size: clamp(1rem, 5vw, 1.8rem);
+            font-size: clamp(1rem, 5vw, 1.8rem); /* Upraveno pro lepší čitelnost na mobilu */
             padding: 2px 0;
             text-align: center;
         }
@@ -113,40 +113,20 @@
     </div>
 
     <div id="kategorie-detail" class="hidden">
-        <h1 id="kategorie-nazev" data-current-id="">Název sekce</h1>
+        <h1 id="kategorie-nazev">Název sekce</h1>
         <div id="tlacitka-grid"></div>
         <button class="btn-back" onclick="vratSeZpet()">⬅ ZPĚT</button>
     </div>
 
     <script>
+        
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
         
         let historieKategorii = []; 
-        let supabaseClient;
-        let voices = [];
 
-        // OPRAVA 1: Robustní načítání hlasů pro Android
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-        }
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-
-        // OPRAVA 2: Bezpečná inicializace Supabase
-        window.onload = () => {
-            try {
-                supabaseClient = supabase.createClient(M_URL, M_KEY);
-                nactiMenu();
-                // Pojistka pro Android zvuk
-                mluv(""); 
-            } catch (e) {
-                console.error("Inicializace selhala:", e);
-            }
-        };
+        const supabaseClient = supabase.createClient(M_URL, M_KEY);
 
         function getImgUrl(imgId) {
             if (!imgId) return 'placeholder.png'; 
@@ -154,56 +134,47 @@
             return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
         }
 
- async function nactiMenu() {
-    const grid = document.getElementById('menu-grid');
-    try {
-        grid.innerHTML = '<p>Připojování k databázi...</p>'; // Status zpráva
+        window.onload = () => nactiMenu();
 
-        const { data, error } = await supabaseClient
-            .from('aac_data')
-            .select('*')
-            .eq('category', 'main')
-            .eq('lang', 'cs');
+        async function nactiMenu() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('aac_data')
+                    .select('*')
+                    .eq('category', 'main')
+                    .eq('lang', 'cs');
 
-        if (error) {
-            grid.innerHTML = `<p style="color:red">Chyba Supabase: ${error.message}</p>`;
-            return;
+                if (error) throw error;
+
+                const grid = document.getElementById('menu-grid');
+                grid.innerHTML = '';
+                data.forEach(item => {
+                    grid.innerHTML += `
+                        <button style="border-color:${item.color || '#3498db'}" 
+                                onclick="ukazKategorii('${item.item_id}', '${item.label}')">
+                            <img src="${getImgUrl(item.img_id)}">
+                            <span>${item.label}</span>
+                        </button>`;
+                });
+            } catch (e) { console.error("Chyba při načítání menu:", e); }
         }
-
-        if (!data || data.length === 0) {
-            grid.innerHTML = '<p>V databázi nebyly nalezeny žádné hlavní kategorie (main/cs).</p>';
-            return;
-        }
-
-        grid.innerHTML = ''; // Vyčistit status a vložit tlačítka
-        data.forEach(item => {
-            grid.innerHTML += `
-                <button style="border-color:${item.color || '#3498db'}" 
-                        onclick="ukazKategorii('${item.item_id}', '${item.label}')">
-                    <img src="${getImgUrl(item.img_id)}">
-                    <span>${item.label}</span>
-                </button>`;
-        });
-    } catch (e) { 
-        grid.innerHTML = `<p style="color:red">Kritická chyba JS: ${e.message}</p>`;
-    }
-}
-
 
         async function ukazKategorii(id, nazev, jeToZpet = false) {
             const menuDiv = document.getElementById('menu');
             const detailDiv = document.getElementById('kategorie-detail');
-            const nazevElement = document.getElementById('kategorie-nazev');
             
             if (!jeToZpet) {
-                const aktualniID = nazevElement.dataset.currentId || 'main';
-                const aktualniLabel = nazevElement.innerText || 'Vyberte kategorii';
-                historieKategorii.push({ id: aktualniID, label: aktualniLabel });
+                const aktualniSekce = {
+                    id: menuDiv.classList.contains('hidden') ? document.getElementById('kategorie-nazev').dataset.currentId : 'main',
+                    label: document.getElementById('kategorie-nazev').innerText
+                };
+                historieKategorii.push(aktualniSekce);
             }
 
             menuDiv.classList.add('hidden');
             detailDiv.classList.remove('hidden');
             
+            const nazevElement = document.getElementById('kategorie-nazev');
             nazevElement.innerText = nazev;
             nazevElement.dataset.currentId = id;
 
@@ -237,30 +208,35 @@
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-        function mluv(t) {
-            if (!t || !window.speechSynthesis) return;
-            window.speechSynthesis.cancel(); 
-            const m = new SpeechSynthesisUtterance(t);
-            m.lang = 'cs-CZ';
-            m.rate = 0.9;
+       function mluv(t) {
+    if (!t || !window.speechSynthesis) return;
 
-            if (voices.length === 0) loadVoices();
-            const czechVoice = voices.find(v => v.lang.includes('cs'));
-            if (czechVoice) m.voice = czechVoice;
+    // Zastavit vše, co zrovna hraje
+    window.speechSynthesis.cancel(); 
 
-            window.speechSynthesis.speak(m);
-        }
+    const m = new SpeechSynthesisUtterance(t);
+    m.lang = 'cs-CZ';
+    m.rate = 0.9; // Mírně pomalejší řeč je pro AAK lepší
+
+    // Najít český hlas (některé Androidy ho ignorují, pokud není výslovně vybrán)
+    const voices = window.speechSynthesis.getVoices();
+    const czechVoice = voices.find(v => v.lang.includes('cs'));
+    if (czechVoice) m.voice = czechVoice;
+
+    window.speechSynthesis.speak(m);
+       }
 
         function vratSeZpet() {
             if (historieKategorii.length === 0) return;
-            const posledni = historieKategorii.pop();
 
-            if (posledni.id === 'main') {
+            const posledniHladina = historieKategorii.pop();
+
+            if (posledniHladina.id === 'main') {
                 document.getElementById('kategorie-detail').classList.add('hidden');
                 document.getElementById('menu').classList.remove('hidden');
                 nactiMenu();
             } else {
-                ukazKategorii(posledni.id, posledni.label, true);
+                ukazKategorii(posledniHladina.id, posledniHladina.label, true);
             }
         }
     </script>
@@ -270,10 +246,4 @@
     </footer>
 </body>
 </html>
-
-
-
-
-
-
 
