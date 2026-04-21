@@ -119,17 +119,31 @@
     </div>
 
     <script>
+        // Inicializace hlasů pro mobilní zařízení
+
+
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
         
         let historieKategorii = []; 
-        let voices = [];
-window.speechSynthesis.onvoiceschanged = () => {
-    voices = window.speechSynthesis.getVoices();
-};
+const supabaseClient = supabase.createClient(M_URL, M_KEY);
 
-        const supabaseClient = supabase.createClient(M_URL, M_KEY);
+let voices = [];
+
+// Funkce pro bezpečné načtení hlasů
+function nactiHlasy() {
+    voices = window.speechSynthesis.getVoices();
+}
+
+// Zkusíme to hned
+nactiHlasy();
+
+// A pojistka, kdyby to prohlížeči trvalo déle (hlavně na Androidu)
+if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = nactiHlasy;
+}
+
 
         function getImgUrl(imgId) {
             if (!imgId) return 'placeholder.png'; 
@@ -137,7 +151,7 @@ window.speechSynthesis.onvoiceschanged = () => {
             return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
         }
 
-           window.onload = () => {
+        window.onload = () => {
             nactiMenu();
             // POJISTKA: Krátké ticho pro aktivaci reproduktoru v Androidu
             mluv(""); 
@@ -215,7 +229,7 @@ window.speechSynthesis.onvoiceschanged = () => {
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-    function mluv(t) {
+      function mluv(t) {
     if (!t) return;
     
     // Pokud je t prázdné (pojistka při startu), jen "připravíme" systém
@@ -245,7 +259,6 @@ window.speechSynthesis.onvoiceschanged = () => {
 }
 
 
-
         function vratSeZpet() {
             if (historieKategorii.length === 0) return;
 
@@ -266,5 +279,7 @@ window.speechSynthesis.onvoiceschanged = () => {
     </footer>
 </body>
 </html>
+
+
 
 
