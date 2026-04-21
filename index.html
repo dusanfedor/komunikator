@@ -152,6 +152,8 @@
 
         async function nactiMenu() {
             try {
+                grid.innerHTML = '<button><span>TEST TLAČÍTKO</span></button>';
+
                 const { data, error } = await supabaseClient
                     .from('aac_data')
                     .select('*')
