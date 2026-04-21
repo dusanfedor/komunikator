@@ -5,113 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AAK Komunikátor</title>
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --shadow: 0 10px 30px rgba(0,0,0,0.1);
-            --radius: 20px;
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background: #e0e5ec;
-            margin: 0; 
-            padding: 20px; 
-            color: #2d3436;
-        }
-
-        h1 {
-            font-weight: 800;
-            text-transform: uppercase;
-            text-align: center;
-            color: #4834d4;
-            margin-bottom: 30px;
-        }
-
-        #menu-grid, #tlacitka-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            padding: 15px;
-        }
-
-        button {
-            background-color: white;
-            border: 4px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-            max-width: 250px; 
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        button img {
-            width: 100%;
-            height: 75%;
-            object-fit: contain; 
-            margin: 5px auto;
-        }
-
-        button span {
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            font-size: clamp(1rem, 5vw, 1.8rem); /* Upraveno pro lepší čitelnost na mobilu */
-            padding: 2px 0;
-            text-align: center;
-        }
-
-        button:active {
-            transform: scale(0.95);
-            border-color: #3498db;
-        }
-
-        button.btn-back {
-            aspect-ratio: auto;
-            max-width: 300px;
-            height: 60px;
-            flex-direction: row;
-            background: var(--primary-gradient);
-            color: white;
-            font-size: 1.4rem;
-            border: none;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        button.btn-back:active {
-            transform: scale(0.95);
-            filter: brightness(0.9);
-        }
-
+        /* ... tvůj CSS kód zůstává stejný ... */
+        :root { --bg-color: #f8f9fa; --card-bg: rgba(255, 255, 255, 0.9); --shadow: 0 10px 30px rgba(0,0,0,0.1); --radius: 20px; --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e0e5ec; margin: 0; padding: 20px; color: #2d3436; }
+        h1 { font-weight: 800; text-transform: uppercase; text-align: center; color: #4834d4; margin-bottom: 30px; }
+        #menu-grid, #tlacitka-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding: 15px; }
+        button { background-color: white; border: 4px solid #e0e0e0; border-radius: 15px; padding: 5px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; overflow: hidden; aspect-ratio: 1 / 1; max-width: 250px; width: 100%; margin: 0 auto; }
+        button img { width: 100%; height: 75%; object-fit: contain; margin: 5px auto; }
+        button span { width: 100%; background-color: rgba(255, 255, 255, 0.8); font-size: clamp(1rem, 5vw, 1.8rem); padding: 2px 0; text-align: center; }
+        button:active { transform: scale(0.95); border-color: #3498db; }
+        button.btn-back { aspect-ratio: auto; max-width: 300px; height: 60px; flex-direction: row; background: var(--primary-gradient); color: white; font-size: 1.4rem; border: none; margin: 20px auto; display: flex; justify-content: center; align-items: center; }
+        button.btn-back:active { transform: scale(0.95); filter: brightness(0.9); }
         .hidden { display: none; }
-
-        footer {
-            margin-top: 50px;
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 14px;
-        }
+        footer { margin-top: 50px; text-align: center; color: #7f8c8d; font-size: 14px; }
     </style>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
-
     <div id="menu">
         <h1>Vyberte kategorii</h1>
         <div id="menu-grid"></div>
     </div>
-
     <div id="kategorie-detail" class="hidden">
         <h1 id="kategorie-nazev">Název sekce</h1>
         <div id="tlacitka-grid"></div>
@@ -119,131 +33,95 @@
     </div>
 
     <script>
-        
-        const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
+        const M_URL = 'https://supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
+        const supabaseClient = supabase.createClient(M_URL, M_KEY);
         
         let historieKategorii = []; 
+        let voices = [];
 
-        const supabaseClient = supabase.createClient(M_URL, M_KEY);
-
-        function getImgUrl(imgId) {
-            if (!imgId) return 'placeholder.png'; 
-            if (imgId.startsWith('http')) return imgId;
-            return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
+        // Pojistka pro načtení hlasů v mobilu
+        function nactiHlasy() {
+            voices = window.speechSynthesis.getVoices();
+        }
+        nactiHlasy();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = nactiHlasy;
         }
 
         window.onload = () => nactiMenu();
 
         async function nactiMenu() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('aac_data')
-                    .select('*')
-                    .eq('category', 'main')
-                    .eq('lang', 'cs');
-
+                const { data, error } = await supabaseClient.from('aac_data').select('*').eq('category', 'main').eq('lang', 'cs');
                 if (error) throw error;
-
                 const grid = document.getElementById('menu-grid');
                 grid.innerHTML = '';
                 data.forEach(item => {
-                    grid.innerHTML += `
-                        <button style="border-color:${item.color || '#3498db'}" 
-                                onclick="ukazKategorii('${item.item_id}', '${item.label}')">
-                            <img src="${getImgUrl(item.img_id)}">
-                            <span>${item.label}</span>
-                        </button>`;
+                    grid.innerHTML += `<button style="border-color:${item.color || '#3498db'}" onclick="ukazKategorii('${item.item_id}', '${item.label}')"><img src="${getImgUrl(item.img_id)}"><span>${item.label}</span></button>`;
                 });
-            } catch (e) { console.error("Chyba při načítání menu:", e); }
+            } catch (e) { console.error("Chyba menu:", e); }
         }
 
         async function ukazKategorii(id, nazev, jeToZpet = false) {
             const menuDiv = document.getElementById('menu');
             const detailDiv = document.getElementById('kategorie-detail');
-            
             if (!jeToZpet) {
-                const aktualniSekce = {
+                historieKategorii.push({
                     id: menuDiv.classList.contains('hidden') ? document.getElementById('kategorie-nazev').dataset.currentId : 'main',
                     label: document.getElementById('kategorie-nazev').innerText
-                };
-                historieKategorii.push(aktualniSekce);
+                });
             }
-
             menuDiv.classList.add('hidden');
             detailDiv.classList.remove('hidden');
-            
             const nazevElement = document.getElementById('kategorie-nazev');
             nazevElement.innerText = nazev;
             nazevElement.dataset.currentId = id;
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('aac_data')
-                    .select('*')
-                    .eq('category', id)
-                    .eq('lang', 'cs');
-
+                const { data, error } = await supabaseClient.from('aac_data').select('*').eq('category', id).eq('lang', 'cs');
                 if (error) throw error;
-
                 const grid = document.getElementById('tlacitka-grid');
                 let html = '';
-                
                 data.forEach(p => {
-                    let onclickAction = (!p.item_id || p.item_id === "null" || p.item_id === "") 
-                        ? `mluv('${p.label}')` 
-                        : `ukazKategorii('${p.item_id}', '${p.label}')`;
-
-                    html += `
-                        <button style="border-color:${p.color || '#e74c3c'}" onclick="${onclickAction}">
-                            <img src="${getImgUrl(p.img_id)}">
-                            <span>${p.label}</span> 
-                        </button>`;
+                    let action = (!p.item_id || p.item_id === "null" || p.item_id === "") ? `mluv('${p.label}')` : `ukazKategorii('${p.item_id}', '${p.label}')`;
+                    html += `<button style="border-color:${p.color || '#e74c3c'}" onclick="${action}"><img src="${getImgUrl(p.img_id)}"><span>${p.label}</span></button>`;
                 });
-
                 grid.innerHTML = html;
-                window.scrollTo(0, 0);
-                
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-       function mluv(t) {
-    if (!t || !window.speechSynthesis) return;
-
-    // Zastavit vše, co zrovna hraje
-    window.speechSynthesis.cancel(); 
-
-    const m = new SpeechSynthesisUtterance(t);
-    m.lang = 'cs-CZ';
-    m.rate = 0.9; // Mírně pomalejší řeč je pro AAK lepší
-
-    // Najít český hlas (některé Androidy ho ignorují, pokud není výslovně vybrán)
-    const voices = window.speechSynthesis.getVoices();
-    const czechVoice = voices.find(v => v.lang.includes('cs'));
-    if (czechVoice) m.voice = czechVoice;
-
-    window.speechSynthesis.speak(m);
-       }
+        function mluv(t) {
+            if (!t || !window.speechSynthesis) return;
+            window.speechSynthesis.cancel(); 
+            const m = new SpeechSynthesisUtterance(t);
+            if (voices.length === 0) voices = window.speechSynthesis.getVoices();
+            const czech = voices.find(v => v.lang.includes('cs'));
+            if (czech) m.voice = czech;
+            m.lang = 'cs-CZ';
+            m.rate = 0.9;
+            window.speechSynthesis.speak(m);
+        }
 
         function vratSeZpet() {
             if (historieKategorii.length === 0) return;
-
-            const posledniHladina = historieKategorii.pop();
-
-            if (posledniHladina.id === 'main') {
+            const posledni = historieKategorii.pop();
+            if (posledni.id === 'main') {
                 document.getElementById('kategorie-detail').classList.add('hidden');
                 document.getElementById('menu').classList.remove('hidden');
                 nactiMenu();
             } else {
-                ukazKategorii(posledniHladina.id, posledniHladina.label, true);
+                ukazKategorii(posledni.id, posledni.label, true);
             }
         }
-    </script>
 
-    <footer>
-        <p>D.F & J.U © 2026</p>
-    </footer>
+        function getImgUrl(imgId) {
+            if (!imgId) return 'placeholder.png';
+            if (imgId.startsWith('http')) return imgId;
+            return `${M_URL}/storage/v1/object/public/${BUCKET_NAME}/${imgId}`;
+        }
+    </script>
 </body>
 </html>
 
