@@ -119,6 +119,11 @@
     </div>
 
     <script>
+        let voices = [];
+window.speechSynthesis.onvoiceschanged = () => {
+    voices = window.speechSynthesis.getVoices();
+};
+
         const M_URL = 'https://acyplaaynqfprwszgtmo.supabase.co';
         const M_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjeXBsYWF5bnFmcHJ3c3pndG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwMjYwMTIsImV4cCI6MjA5MTYwMjAxMn0.Reave_nIn8KXoD3zNTdVFvd2dlF262j8lxG-u4INAjY'; 
         const BUCKET_NAME = 'obrazy'; 
@@ -207,20 +212,32 @@
             } catch (e) { console.error("Chyba detailu:", e); }
         }
 
-     function mluv(t) {
-    if (!t || !window.speechSynthesis) return;
+    function mluv(t) {
+    if (!t || !window.speechSynthesis) {
+        console.error("Syntéza řeči není podporována");
+        return;
+    }
 
-    // Zastavit vše, co zrovna hraje
-    window.speechSynthesis.cancel(); 
+    // Zrušit předchozí řeč
+    window.speechSynthesis.cancel();
 
     const m = new SpeechSynthesisUtterance(t);
+    
+    // Zkusíme najít nejlepší český hlas
+    if (voices.length === 0) voices = window.speechSynthesis.getVoices();
+    
+    const czechVoice = voices.find(v => v.lang === 'cs-CZ' || v.lang === 'cs_CZ' || v.lang.startsWith('cs'));
+    
+    if (czechVoice) {
+        m.voice = czechVoice;
+    }
+    
     m.lang = 'cs-CZ';
-    m.rate = 0.9; // Mírně pomalejší řeč je pro AAK lepší
+    m.pitch = 1;
+    m.rate = 0.9; // Trošku pomalejší pro lepší srozumitelnost
 
-    // Najít český hlas (některé Androidy ho ignorují, pokud není výslovně vybrán)
-    const voices = window.speechSynthesis.getVoices();
-    const czechVoice = voices.find(v => v.lang.includes('cs'));
-    if (czechVoice) m.voice = czechVoice;
+    // Důležité pro Android: Error handling
+    m.onerror = (e) => console.error("Chyba řeči:", e);
 
     window.speechSynthesis.speak(m);
 }
